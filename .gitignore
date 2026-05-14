@@ -1,0 +1,6 @@
+node_modules/
+dist/
+artifacts/
+vite-dev*.log
+tsconfig.tsbuildinfo
+*.zip
