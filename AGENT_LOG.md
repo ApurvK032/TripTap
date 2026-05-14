@@ -31,3 +31,9 @@
 - Files changed: `index.html`, `src/App.tsx`, `public/manifest.webmanifest`, `public/sw.js`, `public/icons/icon.svg`, `AGENTS.md`, `AGENT_LOG.md`.
 - Commands/tests run: `npm run build`.
 - Decision made: on-screen title is `TripTap`; contextual kicker remains `Prospect Park Transit Board`.
+
+## 2026-05-13 19:35:17 -05:00
+
+- User goal: push the local TripTap project to GitHub.
+- Commands run: `git remote add origin https://github.com/ApurvK032/TripTap.git`; `git push -u origin main`.
+- Result: pushed `main` to `origin/main` at commit `3f0ac5c`.
