@@ -37,3 +37,11 @@
 - User goal: push the local TripTap project to GitHub.
 - Commands run: `git remote add origin https://github.com/ApurvK032/TripTap.git`; `git push -u origin main`.
 - Result: pushed `main` to `origin/main` at commit `3f0ac5c`.
+
+## 2026-05-13 19:47:55 -05:00
+
+- User goal: diagnose failed Cloudflare Git build.
+- Files changed: `package.json`, `package-lock.json`, `AGENT_LOG.md`.
+- Commands/tests run: read downloaded Cloudflare build log; `npm install -D @emnapi/core@1.10.0 @emnapi/runtime@1.10.0`; `npm run build`; clean temp `npx npm@10.9.2 ci --progress=false`; `git push`.
+- Decision made: added the missing transitive `@emnapi` packages explicitly as dev dependencies so Cloudflare's npm clean install accepts the lockfile.
+- Result: pushed fix to GitHub at commit `3a181b3`.
