@@ -31,4 +31,4 @@ Mobile-first PWA, branded as TripTap, for one-tap Metro Transit NexTrip departur
 - Metro Transit NexTrip CORS was checked from `http://localhost:5173` on 2026-05-13; responses included `Access-Control-Allow-Origin: *`, so the app uses direct client fetch and does not need a proxy.
 - Stop-number feeds can include unrelated routes; keep filtering by both `route_id` and `direction_id`.
 - The service worker is registered only in production builds to avoid stale dev-server behavior.
-- Update `AGENT_LOG.md` after meaningful work with commands, decisions, and next steps.
+- Keep `AGENT_LOG.md` local-only for session history; it is ignored and should not be committed.

@@ -4,3 +4,4 @@ artifacts/
 vite-dev*.log
 tsconfig.tsbuildinfo
 *.zip
+AGENT_LOG.md
