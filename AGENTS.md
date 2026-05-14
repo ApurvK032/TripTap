@@ -15,6 +15,7 @@ Mobile-first PWA, branded as TripTap, for one-tap Metro Transit NexTrip departur
 - Preview production build: `npm run preview`
 
 ## Important Files
+- `README.md`: public project overview, usage, install, and deployment notes
 - `src/`: React app source
 - `src/transit.ts`: NexTrip feed definitions and route/direction filtering
 - `public/manifest.webmanifest`: PWA metadata

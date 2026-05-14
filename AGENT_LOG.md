@@ -45,3 +45,9 @@
 - Commands/tests run: read downloaded Cloudflare build log; `npm install -D @emnapi/core@1.10.0 @emnapi/runtime@1.10.0`; `npm run build`; clean temp `npx npm@10.9.2 ci --progress=false`; `git push`.
 - Decision made: added the missing transitive `@emnapi` packages explicitly as dev dependencies so Cloudflare's npm clean install accepts the lockfile.
 - Result: pushed fix to GitHub at commit `3a181b3`.
+
+## 2026-05-13 19:55:07 -05:00
+
+- User goal: add a strong README explaining TripTap's personal daily-transit purpose and phone home-screen install behavior.
+- Files changed: `README.md`, `AGENTS.md`, `AGENT_LOG.md`.
+- Decision made: describe the phone install accurately as an installed PWA/home-screen app shortcut rather than a native updating widget.
