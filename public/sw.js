@@ -1,8 +1,8 @@
-const CACHE_NAME = "triptap-v1";
+const CACHE_NAME = "triptap-v2";
 const APP_SHELL = [
   "/",
   "/manifest.webmanifest",
-  "/icons/icon.svg",
+  "/icons/icon-180.png",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
 ];
