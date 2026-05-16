@@ -1,4 +1,12 @@
-import { RefreshCw, Route, Signal, WifiOff } from "lucide-react";
+import {
+  Bus,
+  GraduationCap,
+  Home,
+  RefreshCw,
+  Signal,
+  Train,
+  WifiOff,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FeedConfig,
@@ -7,6 +15,7 @@ import {
   fetchBoardFeeds,
   isFeedError,
   NexTripDeparture,
+  TripSectionId,
 } from "./transit";
 
 const REFRESH_INTERVAL_MS = 25_000;
@@ -100,12 +109,17 @@ export function App() {
   return (
     <div className="app-shell">
       <header className="board-header">
-        <div>
-          <p className="kicker">Prospect Park Transit Board</p>
-          <h1>TripTap</h1>
+        <div className="title-block">
+          <p className="kicker">
+            <span className="kicker-dot" aria-hidden="true" />
+            Prospect Park Board
+          </p>
+          <h1>
+            Trip<span>Tap</span>
+          </h1>
           <p className="updated" aria-live="polite">
             {snapshot.lastUpdated
-              ? `Last updated ${timeFormatter.format(snapshot.lastUpdated)}`
+              ? `Live · updated ${timeFormatter.format(snapshot.lastUpdated)}`
               : "Loading departures"}
           </p>
         </div>
@@ -135,7 +149,14 @@ export function App() {
 
         {feedSections.map((section) => (
           <section className="trip-section" key={section.id}>
-            <h2>{section.title}</h2>
+            <div className="section-heading">
+              <h2>
+                <span className="section-rail" aria-hidden="true" />
+                <SectionIcon id={section.id} />
+                {section.title}
+              </h2>
+              <span>{section.subtitle}</span>
+            </div>
             <div className="feed-grid">
               {section.feeds.map((feed) => (
                 <FeedCard
@@ -165,16 +186,26 @@ function FeedCard({
   const routeTone = feed.routeId === "902" ? "green-line" : "e-line";
 
   return (
-    <article className="feed-card">
+    <article className={`feed-card ${routeTone}`}>
       <div className="feed-heading">
-        <div>
-          <div className="route-line">
-            <span className={`route-pill ${routeTone}`}>{feed.routeName}</span>
-            <span className="direction-pill">{feed.expectedDirection}</span>
-          </div>
+        <div className="stop-title">
           <h3>{feed.stopName}</h3>
+          <span>
+            {feed.stopNickname ? `${feed.stopNickname} · ` : ""}
+            {feed.directionLabel}
+          </span>
         </div>
-        <Route aria-hidden="true" className="route-icon" size={22} />
+        <div className="route-cluster">
+          <span className={`route-pill ${routeTone}`}>
+            {routeTone === "green-line" ? (
+              <Train aria-hidden="true" size={12} />
+            ) : (
+              <Bus aria-hidden="true" size={12} />
+            )}
+            {feed.routeName}
+          </span>
+          <span className="direction-pill">{feed.expectedDirection}</span>
+        </div>
       </div>
 
       {isLoading ? <LoadingRows /> : null}
@@ -203,14 +234,13 @@ function FeedCard({
               </p>
             )}
           </div>
-          <p className="filter-note">
-            Showing {state.departures.length} of {state.filteredCount} matching
-            departures
-            {state.rawCount !== state.filteredCount
-              ? ` from ${state.rawCount} total`
-              : ""}
-            .
-          </p>
+          <div className="card-footer">
+            <span>
+              Showing <strong>{state.departures.length}</strong> of{" "}
+              {state.filteredCount} matching
+            </span>
+            <span>{state.rawCount} total at stop</span>
+          </div>
         </>
       ) : null}
     </article>
@@ -226,7 +256,7 @@ function DepartureRow({
 }) {
   return (
     <div className="departure-row">
-      <div className="departure-time">{departure.departure_text}</div>
+      <DepartureTime text={departure.departure_text} />
       <div className="departure-details">
         <span className="destination">{departure.description}</span>
         <span className="route-meta">
@@ -241,6 +271,37 @@ function DepartureRow({
       </span>
     </div>
   );
+}
+
+function DepartureTime({ text }: { text: string }) {
+  const minuteMatch = text.match(/^(\d+)\s*Min$/i);
+
+  if (minuteMatch) {
+    return (
+      <div className="departure-time">
+        {minuteMatch[1]}
+        <span>min</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`departure-time ${/^due$/i.test(text) ? "is-due" : ""}`}>
+      {text}
+    </div>
+  );
+}
+
+function SectionIcon({ id }: { id: TripSectionId }) {
+  if (id === "home-to-university") {
+    return <GraduationCap aria-hidden="true" size={15} />;
+  }
+
+  if (id === "university-to-home") {
+    return <Home aria-hidden="true" size={15} />;
+  }
+
+  return <Train aria-hidden="true" size={15} />;
 }
 
 function LoadingRows() {

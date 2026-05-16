@@ -32,13 +32,13 @@ https://svc.metrotransit.org
 
 Configured feeds:
 
-| Trip | Stop or Station | Route | Direction |
-| --- | --- | --- | --- |
-| Home to University | University & 27th Ave Station (Accolade) | E Line `925` | SB |
-| University to Home | University & U of M Rec Center Station | E Line `925` | NB |
-| University to Home | University & Huron Station (Wahu) | E Line `925` | NB |
-| Green Line | Stadium Village Station | Green Line `902` | WB |
-| Green Line | East Bank Station | Green Line `902` | EB |
+| Trip | Stop or Station | Nickname | Route | Direction |
+| --- | --- | --- | --- | --- |
+| Home to University | University & 27th Ave Station | Accolade | E Line `925` | SB |
+| University to Home | University & U of M Rec Center Station | Rec Center | E Line `925` | NB |
+| University to Home | University & Huron Station | Wahu | E Line `925` | NB |
+| Green Line | Stadium Village Station | - | Green Line `902` | WB |
+| Green Line | East Bank Station | - | Green Line `902` | EB |
 
 Some stop-number NexTrip endpoints include multiple routes. TripTap filters departures by both `route_id` and `direction_id` so unrelated routes do not clutter the board.
 

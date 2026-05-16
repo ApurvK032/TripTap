@@ -12,8 +12,10 @@ export interface FeedConfig {
   routeId: RouteId;
   directionId: 0 | 1;
   expectedDirection: string;
+  directionLabel: string;
   routeName: string;
   stopName: string;
+  stopNickname?: string;
   url: string;
   maxDepartures: number;
 }
@@ -21,6 +23,7 @@ export interface FeedConfig {
 export interface FeedSection {
   id: TripSectionId;
   title: string;
+  subtitle: string;
   feeds: FeedConfig[];
 }
 
@@ -71,14 +74,17 @@ export const feedSections: FeedSection[] = [
   {
     id: "home-to-university",
     title: "Home to University",
+    subtitle: "Morning ride in",
     feeds: [
       {
         id: "eline-home-university",
         routeId: "925",
         directionId: 1,
         expectedDirection: "SB",
+        directionLabel: "Southbound",
         routeName: "E Line",
-        stopName: "University & 27th Ave Station (Accolade)",
+        stopName: "University & 27th Ave Station",
+        stopNickname: "Accolade",
         url: `${NEXTRIP_BASE_URL}/nextrip/56521`,
         maxDepartures: 4,
       },
@@ -87,14 +93,17 @@ export const feedSections: FeedSection[] = [
   {
     id: "university-to-home",
     title: "University to Home",
+    subtitle: "Evening ride back",
     feeds: [
       {
         id: "eline-rec-center-home",
         routeId: "925",
         directionId: 0,
         expectedDirection: "NB",
+        directionLabel: "Northbound",
         routeName: "E Line",
         stopName: "University & U of M Rec Center Station",
+        stopNickname: "Rec Center",
         url: `${NEXTRIP_BASE_URL}/nextrip/16142`,
         maxDepartures: 4,
       },
@@ -103,8 +112,10 @@ export const feedSections: FeedSection[] = [
         routeId: "925",
         directionId: 0,
         expectedDirection: "NB",
+        directionLabel: "Northbound",
         routeName: "E Line",
-        stopName: "University & Huron Station (Wahu)",
+        stopName: "University & Huron Station",
+        stopNickname: "Wahu",
         url: `${NEXTRIP_BASE_URL}/nextrip/16143`,
         maxDepartures: 4,
       },
@@ -113,12 +124,14 @@ export const feedSections: FeedSection[] = [
   {
     id: "green-line",
     title: "Green Line",
+    subtitle: "Light rail",
     feeds: [
       {
         id: "green-stadium-village-westbound",
         routeId: "902",
         directionId: 1,
         expectedDirection: "WB",
+        directionLabel: "Westbound",
         routeName: "Green Line",
         stopName: "Stadium Village Station",
         url: `${NEXTRIP_BASE_URL}/nextrip/902/1/STVI`,
@@ -129,6 +142,7 @@ export const feedSections: FeedSection[] = [
         routeId: "902",
         directionId: 0,
         expectedDirection: "EB",
+        directionLabel: "Eastbound",
         routeName: "Green Line",
         stopName: "East Bank Station",
         url: `${NEXTRIP_BASE_URL}/nextrip/902/0/EABK`,
