@@ -8,9 +8,13 @@ I built it for personal convenience: instead of opening the official transit app
 
 TripTap groups live Metro Transit NexTrip departures by everyday trip purpose:
 
-- Home to University
-- University to Home
-- Green Line
+- Home to University, with E Line and Green Line options
+- University to Home, with E Line and Green Line options
+- Other stops, with a searchable Metro Transit route explorer
+
+The route explorer lists the current Metro Transit network, displays live
+vehicle locations on an interactive OpenStreetMap map, and lets you choose a
+route direction and stop to see its next departures.
 
 Each card shows:
 
@@ -59,6 +63,7 @@ This is not a native iOS or Android widget that updates on the home screen by it
 - React
 - TypeScript
 - Metro Transit NexTrip API
+- Leaflet and OpenStreetMap
 - Web app manifest
 - Service worker
 - Cloudflare Pages for hosting
@@ -110,5 +115,7 @@ No backend is required because the Metro Transit NexTrip API allows browser requ
 - The visible product title is `TripTap`.
 - The app context is `Prospect Park Transit Board`.
 - Feed definitions live in `src/transit.ts`.
+- Route explorer API helpers live in `src/explorer.ts`.
+- The live route map lives in `src/RouteMap.tsx`.
 - PWA metadata lives in `public/manifest.webmanifest`.
 - Service worker logic lives in `public/sw.js`.

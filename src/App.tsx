@@ -7,7 +7,8 @@ import {
   Train,
   WifiOff,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { RouteExplorer } from "./RouteExplorer";
 import {
   FeedConfig,
   FeedState,
@@ -18,7 +19,35 @@ import {
   TripSectionId,
 } from "./transit";
 
+type BoardViewId = TripSectionId | "other-stops";
+
+interface TripOption {
+  accessibleLabel: string;
+  emoji?: string;
+  id: BoardViewId;
+  label?: string;
+}
+
 const REFRESH_INTERVAL_MS = 25_000;
+const DEFAULT_VIEW_ID: BoardViewId = "university-to-home";
+
+const tripOptions: readonly TripOption[] = [
+  {
+    accessibleLabel: "Home to university",
+    emoji: "🏠 → 🎓",
+    id: "home-to-university",
+  },
+  {
+    accessibleLabel: "University to home",
+    emoji: "🎓 → 🏠",
+    id: "university-to-home",
+  },
+  {
+    accessibleLabel: "Other stops",
+    id: "other-stops",
+    label: "Other stops",
+  },
+];
 
 type LoadPhase = "idle" | "loading" | "ready";
 
@@ -42,6 +71,8 @@ const timeFormatter = new Intl.DateTimeFormat(undefined, {
 });
 
 export function App() {
+  const [activeViewId, setActiveViewId] =
+    useState<BoardViewId>(DEFAULT_VIEW_ID);
   const [snapshot, setSnapshot] = useState<BoardSnapshot>(initialSnapshot);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -96,32 +127,52 @@ export function App() {
     };
   }, [loadDepartures]);
 
-  const anySuccessfulFeeds = useMemo(
-    () =>
-      Object.values(snapshot.feeds).some((feedState) => !isFeedError(feedState)),
-    [snapshot.feeds],
-  );
-  const allFeedsFailed =
+  const activeSection =
+    feedSections.find((section) => section.id === activeViewId) ??
+    feedSections[0];
+  const activeFeedStates = activeSection.feeds
+    .map((feed) => snapshot.feeds[feed.id])
+    .filter((state): state is FeedState => Boolean(state));
+  const activeSectionFailed =
     snapshot.phase === "ready" &&
-    Object.keys(snapshot.feeds).length > 0 &&
-    !anySuccessfulFeeds;
+    activeFeedStates.length === activeSection.feeds.length &&
+    activeFeedStates.every((state) => isFeedError(state));
+
+  const renderTripOption = (option: TripOption) => (
+    <button
+      aria-label={option.accessibleLabel}
+      aria-pressed={activeViewId === option.id}
+      className={`trip-option ${option.emoji ? "emoji-option" : ""}`}
+      key={option.id}
+      onClick={() => setActiveViewId(option.id)}
+      type="button"
+    >
+      {option.emoji ? (
+        <span className="trip-emoji" aria-hidden="true">
+          {option.emoji}
+        </span>
+      ) : (
+        <>
+          <Train aria-hidden="true" size={15} />
+          <span>{option.label}</span>
+        </>
+      )}
+    </button>
+  );
 
   return (
     <div className="app-shell">
       <header className="board-header">
-        <div className="title-block">
-          <p className="kicker">
-            <span className="kicker-dot" aria-hidden="true" />
-            Prospect Park Board
-          </p>
-          <h1>
-            Trip<span>Tap</span>
-          </h1>
-          <p className="updated" aria-live="polite">
-            {snapshot.lastUpdated
-              ? `Live · updated ${timeFormatter.format(snapshot.lastUpdated)}`
-              : "Loading departures"}
-          </p>
+        <div className="brand-lockup">
+          <span className="brand-mark" aria-hidden="true">
+            T
+          </span>
+          <div className="title-block">
+            <p className="kicker">Prospect Park transit</p>
+            <h1>
+              Trip<span>Tap</span>
+            </h1>
+          </div>
         </div>
         <button
           className="refresh-button"
@@ -139,36 +190,66 @@ export function App() {
         </button>
       </header>
 
-      <main>
-        {allFeedsFailed ? (
-          <div className="notice error-notice" role="alert">
-            <WifiOff aria-hidden="true" size={20} />
-            <span>Metro Transit departures are unavailable right now.</span>
-          </div>
-        ) : null}
+      <div className="board-status" aria-live="polite">
+        <span className="live-status">
+          <span className="status-beacon" aria-hidden="true" />
+          Live board
+        </span>
+        <span className="updated">
+          {snapshot.lastUpdated
+            ? `Updated ${timeFormatter.format(snapshot.lastUpdated)}`
+            : "Connecting to Metro Transit"}
+        </span>
+        <span className="refresh-cycle">Auto-refresh · 25 sec</span>
+      </div>
 
-        {feedSections.map((section) => (
-          <section className="trip-section" key={section.id}>
-            <div className="section-heading">
-              <h2>
-                <span className="section-rail" aria-hidden="true" />
-                <SectionIcon id={section.id} />
-                {section.title}
-              </h2>
-              <span>{section.subtitle}</span>
-            </div>
-            <div className="feed-grid">
-              {section.feeds.map((feed) => (
-                <FeedCard
-                  feed={feed}
-                  isLoading={snapshot.phase === "loading"}
-                  key={feed.id}
-                  state={snapshot.feeds[feed.id]}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
+      <nav className="trip-switcher" aria-label="Choose a trip board">
+        {tripOptions.map(renderTripOption)}
+      </nav>
+
+      <main>
+        {activeViewId === "other-stops" ? (
+          <RouteExplorer />
+        ) : (
+          <>
+            {activeSectionFailed ? (
+              <div className="notice error-notice" role="alert">
+                <WifiOff aria-hidden="true" size={20} />
+                <span>This trip board is unavailable right now.</span>
+              </div>
+            ) : null}
+
+            <section className="trip-section" key={activeSection.id}>
+              <div className="section-heading">
+                <div className="section-title">
+                  <span className="section-icon" aria-hidden="true">
+                    <SectionIcon id={activeSection.id} />
+                  </span>
+                  <div>
+                    <span className="section-kicker">
+                      {activeSection.subtitle}
+                    </span>
+                    <h2>{activeSection.title}</h2>
+                  </div>
+                </div>
+                <span className="section-count">
+                  {activeSection.feeds.length}{" "}
+                  {activeSection.feeds.length === 1 ? "stop" : "stops"}
+                </span>
+              </div>
+              <div className="feed-grid">
+                {activeSection.feeds.map((feed) => (
+                  <FeedCard
+                    feed={feed}
+                    isLoading={snapshot.phase === "loading"}
+                    key={feed.id}
+                    state={snapshot.feeds[feed.id]}
+                  />
+                ))}
+              </div>
+            </section>
+          </>
+        )}
       </main>
     </div>
   );
@@ -184,28 +265,28 @@ function FeedCard({
   state?: FeedState;
 }) {
   const routeTone = feed.routeId === "902" ? "green-line" : "e-line";
+  const displayStopName = feed.stopNickname ?? feed.stopName;
 
   return (
     <article className={`feed-card ${routeTone}`}>
       <div className="feed-heading">
-        <div className="stop-title">
-          <h3>{feed.stopName}</h3>
-          <span>
-            {feed.stopNickname ? `${feed.stopNickname} · ` : ""}
-            {feed.directionLabel}
-          </span>
-        </div>
-        <div className="route-cluster">
-          <span className={`route-pill ${routeTone}`}>
-            {routeTone === "green-line" ? (
-              <Train aria-hidden="true" size={12} />
-            ) : (
-              <Bus aria-hidden="true" size={12} />
-            )}
-            {feed.routeName}
-          </span>
-          <span className="direction-pill">{feed.expectedDirection}</span>
-        </div>
+        <span className={`route-pill ${routeTone}`}>
+          {routeTone === "green-line" ? (
+            <Train aria-hidden="true" size={14} />
+          ) : (
+            <Bus aria-hidden="true" size={14} />
+          )}
+          {feed.routeName}
+        </span>
+        <span className="direction-pill">
+          {feed.expectedDirection} · {feed.directionLabel}
+        </span>
+      </div>
+
+      <div className="stop-title">
+        <span className="stop-label">Departures from</span>
+        <h3>{displayStopName}</h3>
+        {feed.stopNickname ? <span>{feed.stopName}</span> : null}
       </div>
 
       {isLoading ? <LoadingRows /> : null}
@@ -221,10 +302,11 @@ function FeedCard({
         <>
           <div className="departures">
             {state.departures.length > 0 ? (
-              state.departures.map((departure) => (
+              state.departures.map((departure, index) => (
                 <DepartureRow
                   departure={departure}
                   expectedDirection={feed.expectedDirection}
+                  isNext={index === 0}
                   key={`${departure.trip_id}-${departure.departure_time}`}
                 />
               ))
@@ -235,11 +317,12 @@ function FeedCard({
             )}
           </div>
           <div className="card-footer">
+            <span>{state.departures.length} upcoming departures</span>
             <span>
-              Showing <strong>{state.departures.length}</strong> of{" "}
-              {state.filteredCount} matching
+              {state.departures.some((departure) => departure.actual)
+                ? "Realtime service"
+                : "Scheduled service"}
             </span>
-            <span>{state.rawCount} total at stop</span>
           </div>
         </>
       ) : null}
@@ -250,13 +333,18 @@ function FeedCard({
 function DepartureRow({
   departure,
   expectedDirection,
+  isNext,
 }: {
   departure: NexTripDeparture;
   expectedDirection: string;
+  isNext: boolean;
 }) {
   return (
-    <div className="departure-row">
-      <DepartureTime text={departure.departure_text} />
+    <div className={`departure-row ${isNext ? "is-next" : ""}`}>
+      <div className="departure-time-cell">
+        <span className="departure-order">{isNext ? "Next" : "Then"}</span>
+        <DepartureTime text={departure.departure_text} />
+      </div>
       <div className="departure-details">
         <span className="destination">{departure.description}</span>
         <span className="route-meta">
@@ -297,18 +385,17 @@ function SectionIcon({ id }: { id: TripSectionId }) {
     return <GraduationCap aria-hidden="true" size={15} />;
   }
 
-  if (id === "university-to-home") {
-    return <Home aria-hidden="true" size={15} />;
-  }
-
-  return <Train aria-hidden="true" size={15} />;
+  return <Home aria-hidden="true" size={15} />;
 }
 
 function LoadingRows() {
   return (
     <div className="departures" aria-label="Loading departures">
       {[0, 1, 2].map((row) => (
-        <div className="departure-row skeleton-row" key={row}>
+        <div
+          className={`departure-row skeleton-row ${row === 0 ? "is-next" : ""}`}
+          key={row}
+        >
           <span className="skeleton time-skeleton" />
           <span className="skeleton destination-skeleton" />
           <span className="skeleton status-skeleton" />
