@@ -1,4 +1,5 @@
 import {
+  ArrowRight,
   Bus,
   GraduationCap,
   Home,
@@ -23,7 +24,6 @@ type BoardViewId = TripSectionId | "other-stops";
 
 interface TripOption {
   accessibleLabel: string;
-  emoji?: string;
   id: BoardViewId;
   label?: string;
 }
@@ -34,12 +34,10 @@ const DEFAULT_VIEW_ID: BoardViewId = "university-to-home";
 const tripOptions: readonly TripOption[] = [
   {
     accessibleLabel: "Home to university",
-    emoji: "🏠 → 🎓",
     id: "home-to-university",
   },
   {
     accessibleLabel: "University to home",
-    emoji: "🎓 → 🏠",
     id: "university-to-home",
   },
   {
@@ -133,6 +131,10 @@ export function App() {
   const activeFeedStates = activeSection.feeds
     .map((feed) => snapshot.feeds[feed.id])
     .filter((state): state is FeedState => Boolean(state));
+  const sortedActiveFeeds = sortFeedsByNextDeparture(
+    activeSection.feeds,
+    snapshot.feeds,
+  );
   const activeSectionFailed =
     snapshot.phase === "ready" &&
     activeFeedStates.length === activeSection.feeds.length &&
@@ -142,15 +144,19 @@ export function App() {
     <button
       aria-label={option.accessibleLabel}
       aria-pressed={activeViewId === option.id}
-      className={`trip-option ${option.emoji ? "emoji-option" : ""}`}
+      className={`trip-option ${
+        option.id === "other-stops"
+          ? "other-stops-option"
+          : "route-icon-option"
+      }`}
       key={option.id}
       onClick={() => setActiveViewId(option.id)}
       type="button"
     >
-      {option.emoji ? (
-        <span className="trip-emoji" aria-hidden="true">
-          {option.emoji}
-        </span>
+      {option.id === "home-to-university" ? (
+        <TripRouteIcons from="home" to="university" />
+      ) : option.id === "university-to-home" ? (
+        <TripRouteIcons from="university" to="home" />
       ) : (
         <>
           <Train aria-hidden="true" size={15} />
@@ -238,7 +244,7 @@ export function App() {
                 </span>
               </div>
               <div className="feed-grid">
-                {activeSection.feeds.map((feed) => (
+                {sortedActiveFeeds.map((feed) => (
                   <FeedCard
                     feed={feed}
                     isLoading={snapshot.phase === "loading"}
@@ -252,6 +258,53 @@ export function App() {
         )}
       </main>
     </div>
+  );
+}
+
+function sortFeedsByNextDeparture(
+  feeds: FeedConfig[],
+  feedStates: Record<string, FeedState>,
+) {
+  return feeds
+    .map((feed, originalIndex) => {
+      const state = feedStates[feed.id];
+      const nextDepartureTime =
+        state && !isFeedError(state) && state.departures.length > 0
+          ? state.departures[0].departure_time
+          : Number.POSITIVE_INFINITY;
+
+      return { feed, nextDepartureTime, originalIndex };
+    })
+    .sort((a, b) => {
+      if (a.nextDepartureTime !== b.nextDepartureTime) {
+        return a.nextDepartureTime - b.nextDepartureTime;
+      }
+
+      return a.originalIndex - b.originalIndex;
+    })
+    .map(({ feed }) => feed);
+}
+
+function TripRouteIcons({
+  from,
+  to,
+}: {
+  from: "home" | "university";
+  to: "home" | "university";
+}) {
+  const renderEndpoint = (endpoint: "home" | "university") =>
+    endpoint === "home" ? (
+      <Home aria-hidden="true" size={19} strokeWidth={1.9} />
+    ) : (
+      <GraduationCap aria-hidden="true" size={20} strokeWidth={1.9} />
+    );
+
+  return (
+    <span className="trip-route-icons" aria-hidden="true">
+      {renderEndpoint(from)}
+      <ArrowRight className="trip-route-arrow" size={17} strokeWidth={1.8} />
+      {renderEndpoint(to)}
+    </span>
   );
 }
 
@@ -308,6 +361,7 @@ function FeedCard({
                   expectedDirection={feed.expectedDirection}
                   isNext={index === 0}
                   key={`${departure.trip_id}-${departure.departure_time}`}
+                  orderLabel={getDepartureOrderLabel(index)}
                 />
               ))
             ) : (
@@ -334,15 +388,17 @@ function DepartureRow({
   departure,
   expectedDirection,
   isNext,
+  orderLabel,
 }: {
   departure: NexTripDeparture;
   expectedDirection: string;
   isNext: boolean;
+  orderLabel: string;
 }) {
   return (
     <div className={`departure-row ${isNext ? "is-next" : ""}`}>
       <div className="departure-time-cell">
-        <span className="departure-order">{isNext ? "Next" : "Then"}</span>
+        <span className="departure-order">{orderLabel}</span>
         <DepartureTime text={departure.departure_text} />
       </div>
       <div className="departure-details">
@@ -359,6 +415,10 @@ function DepartureRow({
       </span>
     </div>
   );
+}
+
+function getDepartureOrderLabel(index: number) {
+  return ["Next", "Then", "Later"][index] ?? "Later";
 }
 
 function DepartureTime({ text }: { text: string }) {

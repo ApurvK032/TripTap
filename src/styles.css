@@ -286,12 +286,19 @@ h1 span {
   white-space: nowrap;
 }
 
-.trip-option.emoji-option {
-  font-size: 1.06rem;
+.trip-option.route-icon-option {
+  gap: 0;
 }
 
-.trip-emoji {
-  letter-spacing: 0.06em;
+.trip-route-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  overflow: visible;
+}
+
+.trip-route-arrow {
+  opacity: 0.68;
 }
 
 main {
@@ -1270,9 +1277,13 @@ main {
     font-size: 0.61rem;
   }
 
-  .trip-option:not(.emoji-option) {
+  .trip-option.other-stops-option {
     gap: 4px;
     font-size: 0.66rem;
+  }
+
+  .trip-route-icons {
+    gap: 5px;
   }
 
   main {
