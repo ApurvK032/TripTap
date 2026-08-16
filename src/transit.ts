@@ -2,8 +2,7 @@ const NEXTRIP_BASE_URL = "https://svc.metrotransit.org";
 
 export type TripSectionId =
   | "home-to-university"
-  | "university-to-home"
-  | "green-line";
+  | "university-to-home";
 
 export type RouteId = "925" | "902";
 
@@ -88,6 +87,17 @@ export const feedSections: FeedSection[] = [
         url: `${NEXTRIP_BASE_URL}/nextrip/56521`,
         maxDepartures: 4,
       },
+      {
+        id: "green-stadium-village-westbound",
+        routeId: "902",
+        directionId: 1,
+        expectedDirection: "WB",
+        directionLabel: "Westbound",
+        routeName: "Green Line",
+        stopName: "Stadium Village Station",
+        url: `${NEXTRIP_BASE_URL}/nextrip/902/1/STVI`,
+        maxDepartures: 4,
+      },
     ],
   },
   {
@@ -117,24 +127,6 @@ export const feedSections: FeedSection[] = [
         stopName: "University & Huron Station",
         stopNickname: "Wahu",
         url: `${NEXTRIP_BASE_URL}/nextrip/16143`,
-        maxDepartures: 4,
-      },
-    ],
-  },
-  {
-    id: "green-line",
-    title: "Green Line",
-    subtitle: "Light rail",
-    feeds: [
-      {
-        id: "green-stadium-village-westbound",
-        routeId: "902",
-        directionId: 1,
-        expectedDirection: "WB",
-        directionLabel: "Westbound",
-        routeName: "Green Line",
-        stopName: "Stadium Village Station",
-        url: `${NEXTRIP_BASE_URL}/nextrip/902/1/STVI`,
         maxDepartures: 4,
       },
       {
